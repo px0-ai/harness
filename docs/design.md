@@ -42,8 +42,9 @@ means running the harness, which can be slow, so it is separate from `Detect`,
 bounded by a 5s timeout, and cached.
 
 **A harness is only supported if it can list its models.** Without that, the
-caller would have to guess model names. This is why gemini, codex, aider and
-goose are not included: none of them has a non-interactive list command.
+caller would have to guess model names. This is why gemini, aider and goose
+are not included: none of them has a non-interactive list command. Codex has
+one: `codex debug models`.
 
 ## Add a Harness
 
