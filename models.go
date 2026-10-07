@@ -3,6 +3,7 @@ package harness
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os/exec"
 	"slices"
@@ -27,6 +28,7 @@ var listers = map[string]lister{
 	"cursor-agent": {[]string{"--list-models"}, parseCursorModels},
 	"agy":          {[]string{"models"}, parseAgyModels},
 	"opencode":     {[]string{"models"}, parseOpencodeModels},
+	"codex":        {[]string{"debug", "models"}, parseCodexModels},
 }
 
 // Successful lookups are cached for the life of the process, because asking a
@@ -148,6 +150,27 @@ func parseOpencodeModels(s string) []string {
 	for _, line := range lines(s) {
 		if !strings.Contains(line, " ") {
 			list = append(list, line)
+		}
+	}
+	return list
+}
+
+// parseCodexModels reads the JSON catalog `codex debug models` prints,
+// keeping visibility "list" entries in the order codex reports them.
+func parseCodexModels(s string) []string {
+	var catalog struct {
+		Models []struct {
+			Slug       string `json:"slug"`
+			Visibility string `json:"visibility"`
+		} `json:"models"`
+	}
+	if err := json.Unmarshal([]byte(s), &catalog); err != nil {
+		return nil
+	}
+	var list []string
+	for _, m := range catalog.Models {
+		if m.Slug != "" && m.Visibility == "list" {
+			list = append(list, m.Slug)
 		}
 	}
 	return list

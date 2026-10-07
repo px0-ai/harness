@@ -47,6 +47,11 @@ var presets = []Preset{
 		Args:      []string{"opencode", "run", Placeholder},
 		ModelFlag: "-m",
 	},
+	{
+		Name:      "codex",
+		Args:      []string{"codex", "exec", "--skip-git-repo-check", "--sandbox", "workspace-write", Placeholder},
+		ModelFlag: "-m",
+	},
 }
 
 // Presets returns a copy of the built-in presets, in picker order.

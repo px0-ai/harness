@@ -139,6 +139,20 @@ func TestParseModels(t *testing.T) {
 	if got := parseOpencodeModels("opencode/big-pickle\ngoogle/gemini-2.5-pro\nsome error text\n"); !reflect.DeepEqual(got, []string{"opencode/big-pickle", "google/gemini-2.5-pro"}) {
 		t.Fatalf("opencode = %v", got)
 	}
+	// Real shape of `codex debug models`, trimmed to the fields the parser
+	// reads: visibility "hide" entries stay out of codex's own picker too.
+	codex := `{"models":[` +
+		`{"slug":"gpt-6.1-sol","visibility":"list","priority":1},` +
+		`{"slug":"gpt-6-astra","visibility":"list","priority":2},` +
+		`{"slug":"gpt-reserve","visibility":"hide","priority":4},` +
+		`{"slug":"gpt-5.6-sol","visibility":"list","priority":5},` +
+		`{"slug":"codex-auto-review","visibility":"hide","priority":43}]}`
+	if got := parseCodexModels(codex); !reflect.DeepEqual(got, []string{"gpt-6.1-sol", "gpt-6-astra", "gpt-5.6-sol"}) {
+		t.Fatalf("codex = %v", got)
+	}
+	if got := parseCodexModels("not json"); got != nil {
+		t.Fatalf("codex junk = %v", got)
+	}
 }
 
 // A listing harness is run for real (here a fake script), and what it prints
@@ -150,6 +164,19 @@ func TestDiscoverModelsUsesHarnessOutput(t *testing.T) {
 	fakeBin(t, "agy", `printf 'Fetching available models...\nm-b\tB\nm-a\tA\n'`)
 	got, err := DiscoverModels(context.Background(), "agy")
 	if err != nil || !reflect.DeepEqual(got, []string{"m-b", "m-a"}) {
+		t.Fatalf("got %v, err %v", got, err)
+	}
+}
+
+// The codex catalog is JSON on stdout, with noise (warnings) on stderr that
+// must not disturb the parse.
+func TestDiscoverModelsCodexCatalog(t *testing.T) {
+	modelsMu.Lock()
+	delete(modelsCache, "codex")
+	modelsMu.Unlock()
+	fakeBin(t, "codex", `echo 'WARNING: stale arg0 temp dirs' >&2; printf '%s' '{"models":[{"slug":"gpt-6.1-sol","visibility":"list"},{"slug":"gpt-reserve","visibility":"hide"}]}'`)
+	got, err := DiscoverModels(context.Background(), "codex")
+	if err != nil || !reflect.DeepEqual(got, []string{"gpt-6.1-sol"}) {
 		t.Fatalf("got %v, err %v", got, err)
 	}
 }

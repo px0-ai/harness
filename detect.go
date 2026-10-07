@@ -79,6 +79,7 @@ func BinDirs() []string {
 		add(home, ".cargo", "bin")
 		add(home, ".local", "bin")
 		add(home, ".opencode", "bin")
+		add(home, ".codex", "bin")
 	}
 	// npm puts global packages beside its own executable unless the prefix was moved.
 	if npm, err := exec.LookPath("npm"); err == nil {

@@ -11,6 +11,7 @@ chosen, the model flag is left out and the harness uses its own configured model
 | `cursor-agent` | `cursor-agent` | `cursor-agent --force --model <model> -p <prompt>`                       |
 | `agy`          | `agy`          | `agy --dangerously-skip-permissions --mode accept-edits --model <model> -p <prompt>` |
 | `opencode`     | `opencode`     | `opencode run -m <model> <prompt>`                                       |
+| `codex`        | `codex`        | `codex exec --skip-git-repo-check --sandbox workspace-write -m <model> <prompt>` |
 
 Every one of these can list the models it offers, using its own command, so
 `DiscoverModels` works for all of them. A harness is supported only if it can.
@@ -21,6 +22,8 @@ Every one of these can list the models it offers, using its own command, so
   installer folder (see `BinDirs`). Detection never runs it.
 - `agy` is run with `--dangerously-skip-permissions`. Use it only on code you
   are willing to let an agent modify.
+- `codex` lists its models with `codex debug models`, its live catalog as JSON
+  (a first-class `codex models` command is tracked as openai/codex#23279).
 - The package keeps no model names, not even defaults, because they go out of
   date as vendors release models. Pick one from `DiscoverModels`, or leave the
   model empty to use the harness's own setting.
